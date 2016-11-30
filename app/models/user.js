@@ -5,27 +5,43 @@ var Schema       = mongoose.Schema;
 var passportLocalMongoose = require('passport-local-mongoose');
 
 var UserSchema   = new Schema({
-    email: {type: String,
-            validate: {
-              validator: function(v) {
-                return "/^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/".test(v);
-              },
-              message: 'Not a valid email address',
-            },
-            required: true},
+    email: {
+      type: String,
+      validate: {
+        validator: function(v) {
+          return /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/.test(v);
+        },
+        message: 'Not a valid email address',
+      },
+      required: true,
+      unique: true
+    },
     password: String,
     first_name: String,
     last_name: String,
-    gender: {type: String, enum: ['male', 'female', 'other'], required: [true, "No gender?"]},
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'other']
+    },
     dob: Date,
     is_patient: Boolean,
     is_doctor: Boolean,
     created_on: {type: Date, default: Date.now},
-    created_by: String,
+    created_by: {type: String, required: true},
     updated_on: {type: Date, default: Date.now},
-    updated_by: String
+    updated_by: {type: String, required: true}
 });
 
-User.plugin(passportLocalMongoose);
+UserSchema.methods.isValidPassword = function (password) {
+  if (this.password == password) {
+    return true;
+  }
+  return false;
+}
 
-module.exports = mongoose.model('User', UserSchema);
+UserSchema.plugin(passportLocalMongoose);
+
+User = mongoose.model('User', UserSchema);
+
+
+module.exports =  User;
