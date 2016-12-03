@@ -1,10 +1,10 @@
 // app/models/bear.js
 
 var mongoose     = require('mongoose');
-var Schema       = mongoose.Schema;
-var passportLocalMongoose = require('passport-local-mongoose');
+var bcrypt   = require('bcrypt-nodejs');
 
-var UserSchema   = new Schema({
+var UserSchema   = new mongoose.Schema({
+
     email: {
       type: String,
       validate: {
@@ -17,6 +17,7 @@ var UserSchema   = new Schema({
       unique: true
     },
     password: String,
+
     first_name: String,
     last_name: String,
     gender: {
@@ -24,22 +25,43 @@ var UserSchema   = new Schema({
       enum: ['male', 'female', 'other']
     },
     dob: Date,
+
     is_patient: Boolean,
     is_doctor: Boolean,
+    admin_level: Number,
+
     created_on: {type: Date, default: Date.now},
     created_by: {type: String, required: true},
     updated_on: {type: Date, default: Date.now},
-    updated_by: {type: String, required: true}
-});
+    updated_by: {type: String, required: true},
 
-UserSchema.methods.isValidPassword = function (password) {
-  if (this.password == password) {
-    return true;
-  }
-  return false;
-}
+    facebook         : {
+        id           : String,
+        token        : String,
+        email        : String,
+        name         : String
+    },
+    twitter          : {
+        id           : String,
+        token        : String,
+        displayName  : String,
+        username     : String
+    },
+    google           : {
+        id           : String,
+        token        : String,
+        email        : String,
+        name         : String
+    }
+    });
+// methods ======================
+UserSchema.methods.generateHash = function(password) {
+    return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
+};
 
-UserSchema.plugin(passportLocalMongoose);
+UserSchema.methods.isValidPassword = function(password) {
+    return bcrypt.compareSync(password, this.password);
+};
 
 User = mongoose.model('User', UserSchema);
 
