@@ -17,7 +17,12 @@ router.use(function(req, res, next) {
  Test Routes
 ===============================================================================*/
 router.get('/ping', function(req, res) {
-  res.json({ message: 'Pong!'});
+  res.json({ data:'Pong'});
+});
+
+router.post('/ping', function(req, res) {
+  console.log(req.body);
+  res.json({ data: ['Pong',req.body]});
 });
 
 /* =============================================================================
@@ -28,8 +33,9 @@ router.get('/ping', function(req, res) {
 
 
 
-require('./authentication')(router);
+require('./auth')(router);
 require('./user')(router);
+require('./case')(router);
 
 /* =============================================================================
 End

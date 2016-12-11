@@ -5,7 +5,7 @@ var authhelper = require('./auth_helper');
 
 module.exports = function (router) {
   // create a user (accessed at POST http://localhost:8080/api/user)
-  router.post('/signup', function(req, res, next) {
+  router.post('/user/create', function(req, res, next) {
     console.log('Signup Request');
     passport.authenticate('local-signup', function(err, user, info) {
       console.log('Strategy ran.');
