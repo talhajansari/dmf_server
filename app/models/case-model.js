@@ -2,7 +2,7 @@ var mongoose     = require('mongoose');
 
 var CaseSchema   = new mongoose.Schema({
 
-    patient: { type: mongoose.Schema.ObjectId, ref: 'Patient' },
+    patient: { type: mongoose.Schema.ObjectId, ref: 'User' },
     case_type: {
       type: String,
       enum: ['rash', 'pimple', 'other']

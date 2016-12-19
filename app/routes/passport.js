@@ -2,22 +2,47 @@
 var passport = require('passport')
 var LocalStrategy = require('passport-local').Strategy;
 var jwt = require('jsonwebtoken');
-var User = require('../models/user');
+var User = require('../models/user-model');
 
 // Define the Login Strategy for Passport.js
 passport.use(new LocalStrategy(
-  { usernameField: 'email', passwordField: 'password' },
-  function(email, password, done) {
+  
+  { usernameField: 'email',
+   passwordField: 'password',
+   passReqToCallback: true },
+
+  function(req, email, password, done) {
     console.log('Finding user!');
+    var user_type = req.body.user_type; // optional
+
     User.findOne({ email: email }, function(err, user) {
-      if (err) { return done(err); }
+      console.log(user);
+      if (err) { 
+        return done(err, {user: null, user_type: null, message: 'Something went wrong!' });
+      }
       if (!user) {
-        return done(null, false, { message: 'Incorrect username.' });
+        return done(null, {user: null, user_type: null, message: 'Invalid username'});
+      }
+      if (!user.is_patient && !user.is_doctor) {
+        return done(null, {user: null, user_type: null, message: 'No user type set for the user'});
+      }
+      if (user_type =='patient' && !user.is_patient) {
+        return done(null, {user: null, user_type: null, message: 'User not registered as a patient'});
+      }
+      if (user_type=='doctor' && !user.is_doctor) {
+        return done(null, {user: null, user_type: null, message: 'User not registered as doctor.' });
       }
       if (!user.isValidPassword(password)) {
-        return done(null, false, { message: 'Incorrect password.' });
+        return done(null, {user: null, user_type: null, message: 'Invalid password'});
       }
-      return done(null, user);
+
+      if (typeof user_type=='undefined' && user.is_patient) {
+        return done(null, {user: user, user_type: 'patient', message: 'User found as patient!'});
+      }
+      if (typeof user_type=='undefined' && user.is_doctor) {
+        return done(null, {user: user, user_type: 'patient', message: 'User found as doctor!'});
+      }
+      return done(null, {user: user, user_type: user_type, message: 'User found!'});
     });
   }
 ));
@@ -26,7 +51,6 @@ passport.use(new LocalStrategy(
 passport.use('local-signup', new LocalStrategy(
   { usernameField: 'email', passwordField: 'password', passReqToCallback : true},
   function(req, email, password, done) {
-    console.log('Finding one!');
     User.findOne({ email: email }, function(err, user) {
       if (err) { return done(err); }
       if (user) {

@@ -1,5 +1,3 @@
-// app/models/bear.js
-
 var mongoose     = require('mongoose');
 var bcrypt   = require('bcrypt-nodejs');
 
